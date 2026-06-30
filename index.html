@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGAP SD — Sistem Informasi Tenaga Pendidik SD Kabupaten Badung</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { font-family: 'Plus Jakarta Sans', sans-serif; }
+  body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf4 100%);
+    min-height: 100vh;
+  }
+
+  /* Sidebar Gradient Premium */
+  .sidebar {
+    background: linear-gradient(180deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+    box-shadow: 4px 0 24px rgba(67, 56, 202, 0.15);
+  }
+  .sidebar-item {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  .sidebar-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, #60a5fa, #a78bfa);
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+  }
+  .sidebar-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(4px);
+  }
+  .sidebar-item.active {
+    background: linear-gradient(90deg, rgba(96, 165, 250, 0.2), rgba(167, 139, 250, 0.1));
+    color: white;
+  }
+  .sidebar-item.active::before { transform: scaleY(1); }
+
+  /* Glassmorphism Card */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .glass-card:hover {
+    box-shadow: 0 12px 40px rgba(31, 38, 135, 0.12);
+    transform: translateY(-2px);
+  }
+
+  /* Stat Card Gradient */
+  .stat-card {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: -50%; right: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+    transition: transform 0.6s;
+  }
+  .stat-card:hover { transform: translateY(-6px) scale(1.02); }
+  .stat-card:hover::before { transform: translate(20%, 20%); }
+  .stat-card .stat-icon {
+    width: 56px; height: 56px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 16px;
+    font-size: 26px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  }
+
+  /* Button Modern */
+  .btn-primary {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+    transition: all 0.3s;
+  }
+  .btn-primary:hover {
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+    transform: translateY(-2px);
+  }
+  .btn-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+    transition: all 0.3s;
+  }
+  .btn-success:hover {
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+    transform: translateY(-2px);
+  }
+  .btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
+  }
+
+  /* Badge Modern */
+  .badge {
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .badge-pns { background: #dbeafe; color: #1e40af; }
+  .badge-pppk { background: #d1fae5; color: #065f46; }
+  .badge-honor { background: #fef3c7; color: #92400e; }
+  .badge-ne { background: #e0e7ff; color: #3730a3; }
+  .badge-sw { background: #fce7f3; color: #9f1239; }
+
+  /* Table Modern */
+  .modern-table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  .modern-table thead th {
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+    color: #475569;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 16px;
+    border-bottom: 2px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+  }
+  .modern-table tbody tr {
+    transition: all 0.2s;
+  }
+  .modern-table tbody tr:hover {
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.04), rgba(139, 92, 246, 0.04));
+  }
+  .modern-table tbody td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 13px;
+    color: #334155;
+  }
+
+  /* Action Button */
+  .action-btn {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 14px;
+  }
+  .action-btn-edit {
+    background: #eff6ff;
+    color: #3b82f6;
+  }
+  .action-btn-edit:hover {
+    background: #3b82f6;
+    color: white;
+    transform: scale(1.1);
+  }
+  .action-btn-delete {
+    background: #fef2f2;
+    color: #ef4444;
+  }
+  .action-btn-delete:hover {
+    background: #ef4444;
+    color: white;
+    transform: scale(1.1);
+  }
+
+  /* Modal */
+  .modal-overlay {
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .modal-content {
+    animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  @keyframes modalSlideIn {
+    from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* Page Transition */
+  .page-section {
+    animation: pageFadeIn 0.4s ease-out;
+  }
+  @keyframes pageFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Scrollbar Custom */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: #f1f5f9; }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #a5b4fc, #818cf8);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #818cf8, #6366f1); }
+
+  /* Status Indicator */
+  .status-ok { color: #10b981; font-weight: 600; }
+  .status-kurang { color: #ef4444; font-weight: 600; }
+  .status-cukup { color: #f59e0b; font-weight: 600; }
+
+  /* Export Card Hover */
+  .export-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  .export-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--accent);
+  }
+  .export-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  }
+
+  /* Filter Select Modern */
+  .filter-select {
+    background: white;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #475569;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .filter-select:hover { border-color: #a5b4fc; }
+  .filter-select:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+
+  /* Input Modern */
+  .input-modern {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    transition: all 0.2s;
+    background: #f8fafc;
+  }
+  .input-modern:focus {
+    outline: none;
+    border-color: #6366f1;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+
+  /* Loading Spinner */
+  .spinner {
+    border: 3px solid rgba(99, 102, 241, 0.1);
+    border-top-color: #6366f1;
+    border-radius: 50%;
+    width: 32px; height: 32px;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Logo Animation */
+  .logo-pulse {
+    animation: logoPulse 2s ease-in-out infinite;
+  }
+  @keyframes logoPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+</style>
+</head>
+<body class="flex min-h-screen">
+
+<!-- ============ SIDEBAR ============ -->
+<aside class="sidebar w-72 flex flex-col text-white">
+  <div class="p-6 border-b border-white/10">
+    <div class="flex items-center gap-3">
+      <div class="logo-pulse w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-2xl shadow-lg">
+        📚
+      </div>
+      <div>
+        <h1 class="text-xl font-bold tracking-tight">SIGAP Pendidikan SD</h1>
+        <p class="text-xs text-indigo-200 font-medium">Kab. Badung · Bali</p>
+      </div>
+    </div>
+  </div>
+
+  <nav class="flex-1 p-4 space-y-1">
+    <p class="text-[10px] font-bold text-indigo-300 uppercase tracking-wider px-3 mb-2">Menu Utama</p>
+    <button onclick="showPage('dashboard')" class="sidebar-item active w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 text-sm font-medium" data-page="dashboard">
+      <span class="text-lg">📊</span> Dashboard
+    </button>
+    <button onclick="showPage('sekolah')" class="sidebar-item w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 text-sm font-medium text-indigo-100" data-page="sekolah">
+      <span class="text-lg">🏫</span> Data Sekolah
+    </button>
+    <button onclick="showPage('guru')" class="sidebar-item w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 text-sm font-medium text-indigo-100" data-page="guru">
+      <span class="text-lg">👨‍🏫</span> Tenaga Pendidik
+    </button>
+    <button onclick="showPage('kekurangan')" class="sidebar-item w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 text-sm font-medium text-indigo-100" data-page="kekurangan">
+      <span class="text-lg">⚠️</span> Kekurangan Guru
+    </button>
+
+    <p class="text-[10px] font-bold text-indigo-300 uppercase tracking-wider px-3 mt-5 mb-2">Laporan</p>
+    <button onclick="showPage('rekap')" class="sidebar-item w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 text-sm font-medium text-indigo-100" data-page="rekap">
+      <span class="text-lg">📋</span> Rekapitulasi
+    </button>
+    <button onclick="showPage('ekspor')" class="sidebar-item w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 text-sm font-medium text-indigo-100" data-page="ekspor">
+      <span class="text-lg">📤</span> Ekspor Data
+    </button>
+  </nav>
+
+  <div class="p-4 border-t border-white/10">
+    <button onclick="openModal('modalSetting')" class="w-full text-left px-4 py-3 hover:bg-white/10 rounded-xl flex items-center gap-3 text-sm font-medium text-indigo-100 transition">
+      <span class="text-lg">⚙️</span> Pengaturan
+    </button>
+    <div class="mt-3 px-4 py-3 bg-white/5 rounded-xl border border-white/10">
+      <p class="text-[10px] text-indigo-300 uppercase font-bold tracking-wider">Tahun Ajaran Aktif</p>
+      <p class="text-sm font-semibold mt-1" id="infoTahunAjaran">2024/2025 · Genap</p>
+    </div>
+  </div>
+</aside>
+
+<!-- ============ MAIN CONTENT ============ -->
+<main class="flex-1 overflow-auto">
+  <header class="bg-white/70 backdrop-blur-md border-b border-slate-200 px-8 py-5 flex justify-between items-center sticky top-0 z-30">
+    <div>
+      <h2 class="text-2xl font-bold text-slate-800 tracking-tight" id="pageTitle">Dashboard Tenaga Pendidik</h2>
+      <p class="text-sm text-slate-500 mt-0.5" id="pageSubtitle">Monitoring dan Pelaporan Tenaga Pendidik SD</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-2 rounded-xl border border-indigo-100">
+        <p class="text-[10px] text-indigo-500 uppercase font-bold tracking-wider">Periode</p>
+        <p class="text-sm font-semibold text-indigo-700" id="headerTahun">2024/2025 · Genap</p>
+      </div>
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg">
+        A
+      </div>
+    </div>
+  </header>
+
+  <div class="p-8">
+
+    <!-- ============ DASHBOARD ============ -->
+    <section id="page-dashboard" class="page-section">
+      <!-- Stat Cards -->
+      <div class="grid grid-cols-4 gap-5 mb-6">
+        <div class="stat-card glass-card rounded-2xl p-5 text-white" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs font-medium text-indigo-100 uppercase tracking-wider">Total Sekolah</p>
+              <p class="text-4xl font-extrabold mt-2" id="statSekolah">0</p>
+              <p class="text-xs text-indigo-100 mt-1">SD Aktif di Badung</p>
+            </div>
+            <div class="stat-icon bg-white/20 backdrop-blur">🏫</div>
+          </div>
+        </div>
+
+        <div class="stat-card glass-card rounded-2xl p-5 text-white" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs font-medium text-emerald-100 uppercase tracking-wider">Total Guru</p>
+              <p class="text-4xl font-extrabold mt-2" id="statGuru">0</p>
+              <p class="text-xs text-emerald-100 mt-1">Tenaga Pendidik</p>
+            </div>
+            <div class="stat-icon bg-white/20 backdrop-blur">👨‍🏫</div>
+          </div>
+        </div>
+
+        <div class="stat-card glass-card rounded-2xl p-5 text-white" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs font-medium text-amber-100 uppercase tracking-wider">Kebutuhan</p>
+              <p class="text-4xl font-extrabold mt-2" id="statKebutuhan">0</p>
+              <p class="text-xs text-amber-100 mt-1">Guru Ideal</p>
+            </div>
+            <div class="stat-icon bg-white/20 backdrop-blur">📋</div>
+          </div>
+        </div>
+
+        <div class="stat-card glass-card rounded-2xl p-5 text-white" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs font-medium text-red-100 uppercase tracking-wider">Kekurangan</p>
+              <p class="text-4xl font-extrabold mt-2" id="statKekurangan">0</p>
+              <p class="text-xs text-red-100 mt-1">Perlu Penambahan</p>
+            </div>
+            <div class="stat-icon bg-white/20 backdrop-blur">⚠️</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row 1 -->
+      <div class="grid grid-cols-2 gap-5 mb-5">
+        <div class="glass-card rounded-2xl p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="font-bold text-slate-800">Distribusi Guru per Kecamatan</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Sebaran tenaga pendidik di 6 kecamatan</p>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-xl">📍</div>
+          </div>
+          <canvas id="chartKecamatan" height="180"></canvas>
+        </div>
+
+        <div class="glass-card rounded-2xl p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="font-bold text-slate-800">Status Kepegawaian</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Komposisi berdasarkan status</p>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-xl">👥</div>
+          </div>
+          <canvas id="chartStatus" height="180"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart Row 2 -->
+      <div class="glass-card rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="font-bold text-slate-800">Kekurangan Guru per Kecamatan</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Identifikasi daerah prioritas</p>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-xl">📉</div>
+        </div>
+        <canvas id="chartKekurangan" height="90"></canvas>
+      </div>
+    </section>
+
+    <!-- ============ DATA SEKOLAH ============ -->
+    <section id="page-sekolah" class="page-section hidden">
+      <div class="glass-card rounded-2xl p-6">
+        <div class="flex justify-between items-center mb-5">
+          <div class="flex gap-2">
+            <select id="filterKecSekolah" onchange="renderSekolah()" class="filter-select">
+              <option value="">📍 Semua Kecamatan</option>
+            </select>
+            <select id="filterStatusSekolah" onchange="renderSekolah()" class="filter-select">
+              <option value="">🏷️ Semua Status</option>
+              <option value="Negeri">Negeri</option>
+              <option value="Swasta">Swasta</option>
+            </select>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportExcel('sekolah')" class="btn-success text-white px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2">
+              📥 Excel
+            </button>
+            <button onclick="openModal('modalSekolah'); resetFormSekolah()" class="btn-primary text-white px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2">
+              ✨ Tambah Sekolah
+            </button>
+          </div>
+        </div>
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="modern-table w-full">
+            <thead>
+              <tr>
+                <th class="text-left">No</th>
+                <th class="text-left">NPSN</th>
+                <th class="text-left">Nama Sekolah</th>
+                <th class="text-left">Kecamatan</th>
+                <th class="text-left">Status</th>
+                <th class="text-center">Rombel</th>
+                <th class="text-center">Siswa</th>
+                <th class="text-center">Kebutuhan</th>
+                <th class="text-center">Tersedia</th>
+                <th class="text-center">Kekurangan</th>
+                <th class="text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbodySekolah"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DATA GURU ============ -->
+    <section id="page-guru" class="page-section hidden">
+      <div class="glass-card rounded-2xl p-6">
+        <div class="flex justify-between items-center mb-5">
+          <div class="flex gap-2">
+            <select id="filterKecGuru" onchange="renderGuru()" class="filter-select">
+              <option value="">📍 Semua Kecamatan</option>
+            </select>
+            <select id="filterStatusGuru" onchange="renderGuru()" class="filter-select">
+              <option value="">🏷️ Semua Status</option>
+              <option value="PNS">PNS</option>
+              <option value="PPPK">PPPK</option>
+              <option value="GTT/Honor">GTT/Honor</option>
+            </select>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportExcel('guru')" class="btn-success text-white px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2">
+              📥 Excel
+            </button>
+            <button onclick="openModal('modalGuru'); resetFormGuru()" class="btn-primary text-white px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2">
+              ✨ Tambah Guru
+            </button>
+          </div>
+        </div>
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="modern-table w-full">
+            <thead>
+              <tr>
+                <th class="text-left">No</th>
+                <th class="text-left">NIP/NIK</th>
+                <th class="text-left">Nama Guru</th>
+                <th class="text-left">JK</th>
+                <th class="text-left">Pendidikan</th>
+                <th class="text-left">Mapel</th>
+                <th class="text-left">Status</th>
+                <th class="text-left">Sekolah</th>
+                <th class="text-left">Kecamatan</th>
+                <th class="text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyGuru"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ KEKURANGAN ============ -->
+    <section id="page-kekurangan" class="page-section hidden">
+      <div class="glass-card rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <h3 class="font-bold text-lg text-slate-800">Rincian Kekurangan Guru per Sekolah</h3>
+            <p class="text-sm text-slate-500 mt-0.5">Analisis kesenjangan tenaga pendidik</p>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-2xl shadow-lg">⚠️</div>
+        </div>
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="modern-table w-full">
+            <thead>
+              <tr>
+                <th class="text-left">No</th>
+                <th class="text-left">Nama Sekolah</th>
+                <th class="text-left">Kecamatan</th>
+                <th class="text-center">Kebutuhan</th>
+                <th class="text-center">Tersedia</th>
+                <th class="text-center">Kekurangan</th>
+                <th class="text-center">% Terpenuhi</th>
+                <th class="text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyKekurangan"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ REKAPITULASI ============ -->
+    <section id="page-rekap" class="page-section hidden">
+      <div class="glass-card rounded-2xl p-6 mb-5">
+        <div class="flex justify-between items-center mb-5">
+          <div>
+            <h3 class="font-bold text-lg text-slate-800">Rekapitulasi per Kecamatan</h3>
+            <p class="text-sm text-slate-500 mt-0.5">Ringkasan data tenaga pendidik</p>
+          </div>
+          <button onclick="exportExcel('rekap')" class="btn-success text-white px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2">
+            📥 Unduh Excel
+          </button>
+        </div>
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="modern-table w-full">
+            <thead>
+              <tr>
+                <th class="text-left">No</th>
+                <th class="text-left">Kecamatan</th>
+                <th class="text-center">Jml Sekolah</th>
+                <th class="text-center">Kebutuhan</th>
+                <th class="text-center">PNS</th>
+                <th class="text-center">PPPK</th>
+                <th class="text-center">GTT/Honor</th>
+                <th class="text-center">Total Tersedia</th>
+                <th class="text-center">Kekurangan</th>
+                <th class="text-center">% Terpenuhi</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyRekap"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <h3 class="font-bold text-lg text-slate-800">Rekapitulasi Guru per Mata Pelajaran</h3>
+            <p class="text-sm text-slate-500 mt-0.5">Distribusi berdasarkan bidang pengajaran</p>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-2xl shadow-lg">📚</div>
+        </div>
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="modern-table w-full">
+            <thead>
+              <tr>
+                <th class="text-left">No</th>
+                <th class="text-left">Mata Pelajaran / Bidang</th>
+                <th class="text-center">Jumlah Guru</th>
+                <th class="text-center">% dari Total</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyMapel"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ EKSPOR ============ -->
+    <section id="page-ekspor" class="page-section hidden">
+      <div class="mb-6">
+        <h3 class="text-2xl font-bold text-slate-800">Pusat Ekspor Data</h3>
+        <p class="text-slate-500 mt-1">Unduh data dalam format Excel atau PDF untuk keperluan pelaporan resmi</p>
+      </div>
+      <div class="grid grid-cols-2 gap-5">
+        <div class="export-card glass-card rounded-2xl p-6" style="--accent: linear-gradient(90deg, #10b981, #059669);">
+          <div class="flex items-start gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-2xl shadow-lg flex-shrink-0">📊</div>
+            <div class="flex-1">
+              <h3 class="font-bold text-lg text-slate-800">Excel — Rekapitulasi Lengkap</h3>
+              <p class="text-sm text-slate-500 mt-1 mb-4">Data sekolah, guru, dan rekapitulasi per kecamatan dalam format XLSX multi-sheet.</p>
+              <button onclick="exportExcel('lengkap')" class="btn-success text-white px-4 py-2.5 rounded-xl text-sm font-semibold w-full">📥 Unduh Excel Lengkap</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="export-card glass-card rounded-2xl p-6" style="--accent: linear-gradient(90deg, #ef4444, #dc2626);">
+          <div class="flex items-start gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center text-2xl shadow-lg flex-shrink-0">📄</div>
+            <div class="flex-1">
+              <h3 class="font-bold text-lg text-slate-800">PDF — Laporan Resmi</h3>
+              <p class="text-sm text-slate-500 mt-1 mb-4">Laporan resmi berformat PDF dengan kop dinas, siap cetak.</p>
+              <button onclick="exportPDF('resmi')" class="btn-danger text-white px-4 py-2.5 rounded-xl text-sm font-semibold w-full">📄 Unduh Laporan PDF</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="export-card glass-card rounded-2xl p-6" style="--accent: linear-gradient(90deg, #3b82f6, #2563eb);">
+          <div class="flex items-start gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-2xl shadow-lg flex-shrink-0">📋</div>
+            <div class="flex-1">
+              <h3 class="font-bold text-lg text-slate-800">Excel — Data Guru Saja</h3>
+              <p class="text-sm text-slate-500 mt-1 mb-4">Export khusus daftar tenaga pendidik dengan kolom lengkap.</p>
+              <button onclick="exportExcel('guru')" class="btn-primary text-white px-4 py-2.5 rounded-xl text-sm font-semibold w-full">📥 Unduh Data Guru</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="export-card glass-card rounded-2xl p-6" style="--accent: linear-gradient(90deg, #f59e0b, #d97706);">
+          <div class="flex items-start gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-2xl shadow-lg flex-shrink-0">⚠️</div>
+            <div class="flex-1">
+              <h3 class="font-bold text-lg text-slate-800">PDF — Laporan Kekurangan</h3>
+              <p class="text-sm text-slate-500 mt-1 mb-4">Laporan khusus kekurangan guru per sekolah dan kecamatan.</p>
+              <button onclick="exportPDF('kekurangan')" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold w-full shadow-lg shadow-amber-500/40 transition">📄 Unduh PDF Kekurangan</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============ MODAL: SEKOLAH ============ -->
+<div id="modalSekolah" class="fixed inset-0 modal-overlay z-50 hidden items-center justify-center p-4">
+  <div class="modal-content bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div class="sticky top-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 rounded-t-3xl">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="text-xl font-bold" id="titleModalSekolah">✨ Tambah Sekolah Baru</h3>
+          <p class="text-xs text-indigo-100 mt-1">Lengkapi data pokok sekolah</p>
+        </div>
+        <button onclick="closeModal('modalSekolah')" class="w-9 h-9 rounded-xl bg-white/20 hover:bg-white/30 flex items-center justify-center text-xl transition">×</button>
+      </div>
+    </div>
+    <form id="formSekolah" class="p-6 grid grid-cols-2 gap-4">
+      <input type="hidden" name="ID">
+      <div>
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">NPSN *</label>
+        <input name="NPSN" required class="input-modern w-full mt-1">
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Nama Sekolah *</label>
+        <input name="NamaSekolah" required class="input-modern w-full mt-1">
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Kecamatan *</label>
+        <select name="Kecamatan" required class="input-modern w-full mt-1" id="selectKecSekolah">
+          <option value="">-- Pilih --</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Desa</label>
+        <input name="Desa" class="input-modern w-full mt-1">
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Status *</label>
+        <select name="Status" required class="input-modern w-full mt-1">
+          <option value="Negeri">Negeri</option>
+          <option value="Swasta">Swasta</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Jenjang</label>
+        <input name="Jenjang" value="SD" readonly class="input-modern w-full mt-1 bg-slate-100">
+      </div>
+      <div class="col-span-2">
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Alamat</label>
+        <input name="Alamat" class="input-modern w-full mt-1">
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Kepala Sekolah</label>
+        <input name="KepalaSekolah" class="input-modern w-full mt-1">
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Telepon</label>
+        <input name="Telepon" class="input-modern w-full mt-1">
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Email</label>
+        <input name="Email" type="email" class="input-modern w-full mt-1">
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Jumlah Rombel</label>
+        <input name="JumlahRombel" type="number" class="input-modern w-full mt-1">
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Jumlah Siswa</label>
+        <input name="JumlahSiswa" type="number" class="input-modern w-full mt-1">
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Kebutuhan Guru (Ideal) *</label>
+        <input name="KebutuhanGuru" type="number" required class="input-modern w-full mt-1">
+      </div>
+      <div class="col-span-2 flex justify-end gap-2 pt-4 mt-2 border-t border-slate-100">
+        <button type="button" onclick="closeModal('modalSekolah')" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition">Batal</button>
+        <button type="submit" class="btn-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold">💾 Simpan Data</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MODAL: GURU ============ -->
+<div id="modalGuru" class="fixed inset-0 modal-overlay z-50 hidden items-center justify-center p-4">
+  <div class="modal-content bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div class="sticky top-0 bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-6 rounded-t-3xl">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="text-xl font-bold" id="titleModalGuru">✨ Tambah Tenaga Pendidik</h3>
+          <p class="text-xs text-emerald-100 mt-1">Lengkapi data guru baru</p>
+        </div>
+        <button onclick="closeModal('modalGuru')" class="w-9 h-9 rounded-xl bg-white/20 hover:bg-white/30 flex items-center justify-center text-xl transition">×</button>
+      </div>
+    </div>
+    <form id="formGuru" class="p-6 grid grid-cols-2 gap-4">
+      <input type="hidden" name="ID">
+      <div>
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">NIP / NIK *</label>
+        <input name="NIP" required class="input-modern w-full mt-1">
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Nama Lengkap *</label>
+        <input name="NamaGuru" required class="input-modern w-full mt-1">
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Jenis Kelamin *</label>
+        <select name="JK" required class="input-modern w-full mt-1">
+          <option value="Laki-laki">Laki-laki</option>
+          <option value="Perempuan">Perempuan</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Pendidikan Terakhir</label>
+        <select name="Pendidikan" class="input-modern w-full mt-1">
+          <option value="S1">S1</option>
+          <option value="S2">S2</option>
+          <option value="D4">D4</option>
+          <option value="D3">D3</option>
+          <option value="SMA/Sederajat">SMA/Sederajat</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Status Kepegawaian *</label>
+        <select name="StatusPegawai" required class="input-modern w-full mt-1">
+          <option value="PNS">PNS</option>
+          <option value="PPPK">PPPK</option>
+          <option value="GTT/Honor">GTT/Honor</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Mata Pelajaran *</label>
+        <select name="Mapel" required class="input-modern w-full mt-1">
+          <option value="Guru Kelas">Guru Kelas</option>
+          <option value="PAI">PAI</option>
+          <option value="PJOK">PJOK</option>
+          <option value="Bahasa Inggris">Bahasa Inggris</option>
+          <option value="Seni Budaya">Seni Budaya</option>
+          <option value="Matematika">Matematika</option>
+          <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+          <option value="IPA">IPA</option>
+          <option value="IPS">IPS</option>
+          <option value="PPKn">PPKn</option>
+          <option value="Mulok">Mulok</option>
+        </select>
+      </div>
+      <div class="col-span-2">
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Sekolah Penempatan *</label>
+        <select name="SekolahID" required class="input-modern w-full mt-1" id="selectSekolahGuru">
+          <option value="">-- Pilih Sekolah --</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">No HP</label>
+        <input name="NoHP" class="input-modern w-full mt-1">
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Email</label>
+        <input name="Email" type="email" class="input-modern w-full mt-1">
+      </div>
+      <div class="col-span-2 flex justify-end gap-2 pt-4 mt-2 border-t border-slate-100">
+        <button type="button" onclick="closeModal('modalGuru')" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition">Batal</button>
+        <button type="submit" class="btn-success text-white px-5 py-2.5 rounded-xl text-sm font-semibold">💾 Simpan Data</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MODAL: SETTING ============ -->
+<div id="modalSetting" class="fixed inset-0 modal-overlay z-50 hidden items-center justify-center p-4">
+  <div class="modal-content bg-white rounded-3xl shadow-2xl w-full max-w-md">
+    <div class="sticky top-0 bg-gradient-to-r from-slate-800 to-slate-900 text-white p-6 rounded-t-3xl">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="text-xl font-bold">⚙️ Pengaturan Tahun Ajaran</h3>
+          <p class="text-xs text-slate-300 mt-1">Atur periode aktif sistem</p>
+        </div>
+        <button onclick="closeModal('modalSetting')" class="w-9 h-9 rounded-xl bg-white/20 hover:bg-white/30 flex items-center justify-center text-xl transition">×</button>
+      </div>
+    </div>
+    <form id="formSetting" class="p-6 space-y-4">
+      <div>
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Tahun Awal *</label>
+        <input name="TahunAwal" type="number" value="2024" required class="input-modern w-full mt-1">
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Tahun Akhir *</label>
+        <input name="TahunAkhir" type="number" value="2025" required class="input-modern w-full mt-1">
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Semester *</label>
+        <select name="Semester" required class="input-modern w-full mt-1">
+          <option value="Ganjil">Semester Ganjil (Juli – Desember)</option>
+          <option value="Genap" selected>Semester Genap (Januari – Juni)</option>
+        </select>
+      </div>
+      <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-xl border border-indigo-100">
+        <p class="text-[10px] text-indigo-500 uppercase font-bold tracking-wider">Pratinjau</p>
+        <p class="text-sm font-semibold text-indigo-700 mt-1" id="previewTahun">2024/2025 · Semester Genap</p>
+      </div>
+      <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+        <button type="button" onclick="closeModal('modalSetting')" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition">Batal</button>
+        <button type="submit" class="btn-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold">✔ Terapkan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ LOADING OVERLAY ============ -->
+<div id="loadingOverlay" class="fixed inset-0 modal-overlay z-[100] hidden items-center justify-center">
+  <div class="bg-white rounded-2xl p-6 shadow-2xl flex items-center gap-4">
+    <div class="spinner"></div>
+    <div>
+      <p class="font-bold text-slate-800">Memproses...</p>
+      <p class="text-xs text-slate-500">Mohon tunggu sebentar</p>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   KONFIGURASI API
+   ============================================================ */
+const API_URL = 'https://script.google.com/macros/s/AKfycbwoabIrOEeWjH0NF1Te5K_l2YxUDSUTl31NvK4967dsdtc4i3s-hYKmWtsN9kGB1ICF-A/exec';
+
+/* ============================================================
+   STATE GLOBAL
+   ============================================================ */
+let DATA = { sekolah: [], guru: [], kecamatan: [], tahunAjaran: {} };
+let CHARTS = {};
+
+/* ============================================================
+   API HELPER
+   ============================================================ */
+async function apiGet(table) {
+  const res = await fetch(`${API_URL}?table=${table}&t=${Date.now()}`);
+  const json = await res.json();
+  if (json.status !== 'success') throw new Error(json.message);
+  return json.data || [];
+}
+
+async function apiPost(action, table, data = null, id = null) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action, table, data, id })
+  });
+  const json = await res.json();
+  if (json.status !== 'success') throw new Error(json.message);
+  return json;
+}
+
+function showLoading(show) {
+  const el = document.getElementById('loadingOverlay');
+  if (show) el.classList.remove('hidden'), el.classList.add('flex');
+  else el.classList.add('hidden'), el.classList.remove('flex');
+}
+
+/* ============================================================
+   NAVIGASI
+   ============================================================ */
+function showPage(page) {
+  document.querySelectorAll('.page-section').forEach(s => s.classList.add('hidden'));
+  document.getElementById('page-' + page).classList.remove('hidden');
+  document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-page="${page}"]`).classList.add('active');
+
+  const titles = {
+    dashboard: ['Dashboard Tenaga Pendidik', 'Monitoring dan Pelaporan Tenaga Pendidik SD'],
+    sekolah: ['Data Sekolah Dasar', 'Daftar seluruh SD di Kabupaten Badung'],
+    guru: ['Data Tenaga Pendidik', 'Daftar lengkap guru SD aktif'],
+    kekurangan: ['Kekurangan Tenaga Pendidik', 'Analisis kesenjangan guru per sekolah'],
+    rekap: ['Rekapitulasi Data', 'Ringkasan data tenaga pendidik per kecamatan'],
+    ekspor: ['Pusat Ekspor Data', 'Unduh data dalam format Excel atau PDF']
+  };
+  document.getElementById('pageTitle').innerText = titles[page][0];
+  document.getElementById('pageSubtitle').innerText = titles[page][1];
+
+  if (page === 'dashboard') renderDashboard();
+  if (page === 'sekolah') renderSekolah();
+  if (page === 'guru') renderGuru();
+  if (page === 'kekurangan') renderKekurangan();
+  if (page === 'rekap') renderRekap();
+}
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+function openModal(id) {
+  const el = document.getElementById(id);
+  el.classList.remove('hidden');
+  el.classList.add('flex');
+}
+function closeModal(id) {
+  const el = document.getElementById(id);
+  el.classList.add('hidden');
+  el.classList.remove('flex');
+}
+
+/* ============================================================
+   HELPER STATISTIK
+   ============================================================ */
+function getGuruBySekolah(sekolahId) {
+  return DATA.guru.filter(g => String(g.SekolahID) === String(sekolahId) && g.Aktif !== 'Tidak');
+}
+
+function hitungStatSekolah(s) {
+  const tersedia = getGuruBySekolah(s.ID).length;
+  const kebutuhan = parseInt(s.KebutuhanGuru) || 0;
+  const kekurangan = kebutuhan - tersedia;
+  const persen = kebutuhan > 0 ? Math.round((tersedia / kebutuhan) * 100) : 0;
+  return { tersedia, kebutuhan, kekurangan, persen };
+}
+
+/* ============================================================
+   RENDER: DASHBOARD
+   ============================================================ */
+function renderDashboard() {
+  const sekolahAktif = DATA.sekolah.filter(s => s.Aktif !== 'Tidak');
+  const guruAktif = DATA.guru.filter(g => g.Aktif !== 'Tidak');
+
+  let totalKebutuhan = 0, totalTersedia = 0;
+  sekolahAktif.forEach(s => {
+    const stat = hitungStatSekolah(s);
+    totalKebutuhan += stat.kebutuhan;
+    totalTersedia += stat.tersedia;
+  });
+
+  document.getElementById('statSekolah').innerText = sekolahAktif.length;
+  document.getElementById('statGuru').innerText = guruAktif.length;
+  document.getElementById('statKebutuhan').innerText = totalKebutuhan;
+  document.getElementById('statKekurangan').innerText = Math.max(0, totalKebutuhan - totalTersedia);
+
+  const kecNames = DATA.kecamatan.map(k => k.NamaKecamatan);
+  const dataPerKec = kecNames.map(k => {
+    const sekolahKec = sekolahAktif.filter(s => s.Kecamatan === k);
+    return sekolahKec.reduce((sum, s) => sum + getGuruBySekolah(s.ID).length, 0);
+  });
+
+  if (CHARTS.kec) CHARTS.kec.destroy();
+  CHARTS.kec = new Chart(document.getElementById('chartKecamatan'), {
+    type: 'bar',
+    data: {
+      labels: kecNames,
+      datasets: [{
+        label: 'Jumlah Guru',
+        data: dataPerKec,
+        backgroundColor: 'rgba(99, 102, 241, 0.8)',
+        borderRadius: 8,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  const pns = guruAktif.filter(g => g.StatusPegawai === 'PNS').length;
+  const pppk = guruAktif.filter(g => g.StatusPegawai === 'PPPK').length;
+  const honor = guruAktif.filter(g => g.StatusPegawai === 'GTT/Honor').length;
+
+  if (CHARTS.status) CHARTS.status.destroy();
+  CHARTS.status = new Chart(document.getElementById('chartStatus'), {
+    type: 'doughnut',
+    data: {
+      labels: ['PNS', 'PPPK', 'GTT/Honor'],
+      datasets: [{
+        data: [pns, pppk, honor],
+        backgroundColor: ['#6366f1', '#10b981', '#f59e0b'],
+        borderWidth: 0,
+        spacing: 4,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      cutout: '65%',
+      plugins: { legend: { position: 'bottom', labels: { padding: 15, usePointStyle: true, pointStyle: 'circle' } } }
+    }
+  });
+
+  const kekuranganPerKec = kecNames.map(k => {
+    const sekolahKec = sekolahAktif.filter(s => s.Kecamatan === k);
+    return sekolahKec.reduce((sum, s) => sum + hitungStatSekolah(s).kekurangan, 0);
+  });
+
+  if (CHARTS.kek) CHARTS.kek.destroy();
+  CHARTS.kek = new Chart(document.getElementById('chartKekurangan'), {
+    type: 'bar',
+    data: {
+      labels: kecNames,
+      datasets: [{
+        label: 'Kekurangan',
+        data: kekuranganPerKec,
+        backgroundColor: 'rgba(239, 68, 68, 0.8)',
+        borderRadius: 8,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+/* ============================================================
+   RENDER: SEKOLAH
+   ============================================================ */
+function renderSekolah() {
+  const tbody = document.getElementById('tbodySekolah');
+  const fKec = document.getElementById('filterKecSekolah').value;
+  const fStat = document.getElementById('filterStatusSekolah').value;
+
+  let data = DATA.sekolah.filter(s => s.Aktif !== 'Tidak');
+  if (fKec) data = data.filter(s => s.Kecamatan === fKec);
+  if (fStat) data = data.filter(s => s.Status === fStat);
+
+  if (data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="11" class="p-8 text-center text-slate-400">Tidak ada data</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map((s, i) => {
+    const st = hitungStatSekolah(s);
+    return `<tr>
+      <td class="font-semibold text-slate-500">${i + 1}</td>
+      <td><code class="bg-slate-100 px-2 py-1 rounded-md text-xs font-mono text-slate-700">${s.NPSN || '-'}</code></td>
+      <td class="font-semibold text-slate-800">${s.NamaSekolah}</td>
+      <td>${s.Kecamatan}</td>
+      <td><span class="badge ${s.Status === 'Negeri' ? 'badge-ne' : 'badge-sw'}">${s.Status}</span></td>
+      <td class="text-center font-semibold">${s.JumlahRombel || 0}</td>
+      <td class="text-center font-semibold">${s.JumlahSiswa || 0}</td>
+      <td class="text-center font-semibold text-amber-600">${st.kebutuhan}</td>
+      <td class="text-center font-semibold text-emerald-600">${st.tersedia}</td>
+      <td class="text-center font-bold ${st.kekurangan > 0 ? 'status-kurang' : 'status-ok'}">${st.kekurangan}</td>
+      <td class="text-center">
+        <button onclick="editSekolah(${s.ID})" class="action-btn action-btn-edit" title="Edit">✏️</button>
+        <button onclick="deleteData('Sekolah', ${s.ID})" class="action-btn action-btn-delete ml-1" title="Hapus">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ============================================================
+   RENDER: GURU
+   ============================================================ */
+function renderGuru() {
+  const tbody = document.getElementById('tbodyGuru');
+  const fKec = document.getElementById('filterKecGuru').value;
+  const fStat = document.getElementById('filterStatusGuru').value;
+
+  let data = DATA.guru.filter(g => g.Aktif !== 'Tidak');
+  if (fKec) {
+    const ids = DATA.sekolah.filter(s => s.Kecamatan === fKec).map(s => String(s.ID));
+    data = data.filter(g => ids.includes(String(g.SekolahID)));
+  }
+  if (fStat) data = data.filter(g => g.StatusPegawai === fStat);
+
+  if (data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="10" class="p-8 text-center text-slate-400">Tidak ada data</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map((g, i) => {
+    const sekolah = DATA.sekolah.find(s => String(s.ID) === String(g.SekolahID));
+    const badgeClass = g.StatusPegawai === 'PNS' ? 'badge-pns' : g.StatusPegawai === 'PPPK' ? 'badge-pppk' : 'badge-honor';
+    return `<tr>
+      <td class="font-semibold text-slate-500">${i + 1}</td>
+      <td><code class="bg-slate-100 px-2 py-1 rounded-md text-xs font-mono text-slate-700">${g.NIP || '-'}</code></td>
+      <td class="font-semibold text-slate-800">${g.NamaGuru}</td>
+      <td>${g.JK === 'Laki-laki' ? '👨' : '👩'} ${g.JK}</td>
+      <td>${g.Pendidikan || '-'}</td>
+      <td>${g.Mapel || '-'}</td>
+      <td><span class="badge ${badgeClass}">${g.StatusPegawai}</span></td>
+      <td class="text-xs">${sekolah ? sekolah.NamaSekolah : '-'}</td>
+      <td class="text-xs">${sekolah ? sekolah.Kecamatan : '-'}</td>
+      <td class="text-center">
+        <button onclick="editGuru(${g.ID})" class="action-btn action-btn-edit" title="Edit">✏️</button>
+        <button onclick="deleteData('Guru', ${g.ID})" class="action-btn action-btn-delete ml-1" title="Hapus">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ============================================================
+   RENDER: KEKURANGAN
+   ============================================================ */
+function renderKekurangan() {
+  const tbody = document.getElementById('tbodyKekurangan');
+  const data = DATA.sekolah.filter(s => s.Aktif !== 'Tidak')
+    .map(s => ({ ...s, ...hitungStatSekolah(s) }))
+    .sort((a, b) => b.kekurangan - a.kekurangan);
+
+  tbody.innerHTML = data.map((s, i) => {
+    let status = 'Terpenuhi', statusClass = 'status-ok';
+    if (s.persen < 80) { status = 'Kurang'; statusClass = 'status-kurang'; }
+    else if (s.persen < 100) { status = 'Cukup'; statusClass = 'status-cukup'; }
+    return `<tr>
+      <td class="font-semibold text-slate-500">${i + 1}</td>
+      <td class="font-semibold text-slate-800">${s.NamaSekolah}</td>
+      <td>${s.Kecamatan}</td>
+      <td class="text-center font-semibold">${s.kebutuhan}</td>
+      <td class="text-center font-semibold">${s.tersedia}</td>
+      <td class="text-center font-bold ${s.kekurangan > 0 ? 'status-kurang' : 'status-ok'}">${s.kekurangan}</td>
+      <td class="text-center font-semibold">${s.persen}%</td>
+      <td class="text-center"><span class="${statusClass}">${status}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ============================================================
+   RENDER: REKAP
+   ============================================================ */
+function renderRekap() {
+  const tbody = document.getElementById('tbodyRekap');
+  const tbodyMapel = document.getElementById('tbodyMapel');
+  const guruAktif = DATA.guru.filter(g => g.Aktif !== 'Tidak');
+  const sekolahAktif = DATA.sekolah.filter(s => s.Aktif !== 'Tidak');
+
+  const rekap = DATA.kecamatan.map(k => {
+    const sk = sekolahAktif.filter(s => s.Kecamatan === k.NamaKecamatan);
+    const ids = sk.map(s => String(s.ID));
+    const gk = guruAktif.filter(g => ids.includes(String(g.SekolahID)));
+    const kebutuhan = sk.reduce((sum, s) => sum + (parseInt(s.KebutuhanGuru) || 0), 0);
+    const pns = gk.filter(g => g.StatusPegawai === 'PNS').length;
+    const pppk = gk.filter(g => g.StatusPegawai === 'PPPK').length;
+    const honor = gk.filter(g => g.StatusPegawai === 'GTT/Honor').length;
+    const total = gk.length;
+    const kekurangan = kebutuhan - total;
+    const persen = kebutuhan > 0 ? Math.round((total / kebutuhan) * 100) : 0;
+    return { nama: k.NamaKecamatan, jml: sk.length, kebutuhan, pns, pppk, honor, total, kekurangan, persen };
+  });
+
+  tbody.innerHTML = rekap.map((r, i) => `
+    <tr>
+      <td class="font-semibold text-slate-500">${i + 1}</td>
+      <td class="font-semibold text-slate-800">${r.nama}</td>
+      <td class="text-center font-semibold">${r.jml}</td>
+      <td class="text-center font-semibold">${r.kebutuhan}</td>
+      <td class="text-center"><span class="badge badge-pns">${r.pns}</span></td>
+      <td class="text-center"><span class="badge badge-pppk">${r.pppk}</span></td>
+      <td class="text-center"><span class="badge badge-honor">${r.honor}</span></td>
+      <td class="text-center font-bold text-emerald-600">${r.total}</td>
+      <td class="text-center font-bold ${r.kekurangan > 0 ? 'status-kurang' : 'status-ok'}">${r.kekurangan}</td>
+      <td class="text-center font-semibold">${r.persen}%</td>
+    </tr>`).join('');
+
+  const mapelCount = {};
+  guruAktif.forEach(g => { mapelCount[g.Mapel] = (mapelCount[g.Mapel] || 0) + 1; });
+  const totalGuru = guruAktif.length;
+  const mapelArr = Object.entries(mapelCount).sort((a, b) => b[1] - a[1]);
+
+  tbodyMapel.innerHTML = mapelArr.map((m, i) => {
+    const persen = totalGuru > 0 ? ((m[1] / totalGuru) * 100).toFixed(1) : 0;
+    return `<tr>
+      <td class="font-semibold text-slate-500">${i + 1}</td>
+      <td class="font-semibold text-slate-800">${m[0]}</td>
+      <td class="text-center font-bold">${m[1]}</td>
+      <td class="text-center font-semibold text-indigo-600">${persen}%</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ============================================================
+   CRUD: SEKOLAH
+   ============================================================ */
+function resetFormSekolah() {
+  document.getElementById('formSekolah').reset();
+  document.getElementById('formSekolah').ID.value = '';
+  document.getElementById('titleModalSekolah').innerText = '✨ Tambah Sekolah Baru';
+}
+
+function editSekolah(id) {
+  const s = DATA.sekolah.find(x => x.ID == id);
+  if (!s) return;
+  const f = document.getElementById('formSekolah');
+  f.ID.value = s.ID;
+  f.NPSN.value = s.NPSN || '';
+  f.NamaSekolah.value = s.NamaSekolah || '';
+  f.Kecamatan.value = s.Kecamatan || '';
+  f.Desa.value = s.Desa || '';
+  f.Status.value = s.Status || 'Negeri';
+  f.Jenjang.value = s.Jenjang || 'SD';
+  f.Alamat.value = s.Alamat || '';
+  f.KepalaSekolah.value = s.KepalaSekolah || '';
+  f.Telepon.value = s.Telepon || '';
+  f.Email.value = s.Email || '';
+  f.JumlahRombel.value = s.JumlahRombel || '';
+  f.JumlahSiswa.value = s.JumlahSiswa || '';
+  f.KebutuhanGuru.value = s.KebutuhanGuru || '';
+  document.getElementById('titleModalSekolah').innerText = '✏️ Edit Sekolah';
+  openModal('modalSekolah');
+}
+
+document.getElementById('formSekolah').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  showLoading(true);
+  try {
+    const fd = new FormData(e.target);
+    const data = Object.fromEntries(fd.entries());
+    const id = data.ID;
+    delete data.ID;
+    data.Jenjang = 'SD';
+    data.Aktif = 'Ya';
+
+    if (id) await apiPost('update', 'Sekolah', data, id);
+    else await apiPost('add', 'Sekolah', data);
+
+    await loadData();
+    closeModal('modalSekolah');
+    alert('✅ Data sekolah berhasil disimpan');
+  } catch (err) {
+    alert('❌ Error: ' + err.message);
+  } finally {
+    showLoading(false);
+  }
+});
+
+/* ============================================================
+   CRUD: GURU
+   ============================================================ */
+function resetFormGuru() {
+  document.getElementById('formGuru').reset();
+  document.getElementById('formGuru').ID.value = '';
+  document.getElementById('titleModalGuru').innerText = '✨ Tambah Tenaga Pendidik';
+  populateSelectSekolah();
+}
+
+function editGuru(id) {
+  const g = DATA.guru.find(x => x.ID == id);
+  if (!g) return;
+  populateSelectSekolah();
+  const f = document.getElementById('formGuru');
+  f.ID.value = g.ID;
+  f.NIP.value = g.NIP || '';
+  f.NamaGuru.value = g.NamaGuru || '';
+  f.JK.value = g.JK || 'Laki-laki';
+  f.Pendidikan.value = g.Pendidikan || 'S1';
+  f.StatusPegawai.value = g.StatusPegawai || 'PNS';
+  f.Mapel.value = g.Mapel || 'Guru Kelas';
+  f.SekolahID.value = g.SekolahID || '';
+  f.NoHP.value = g.NoHP || '';
+  f.Email.value = g.Email || '';
+  document.getElementById('titleModalGuru').innerText = '✏️ Edit Tenaga Pendidik';
+  openModal('modalGuru');
+}
+
+document.getElementById('formGuru').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  showLoading(true);
+  try {
+    const fd = new FormData(e.target);
+    const data = Object.fromEntries(fd.entries());
+    const id = data.ID;
+    delete data.ID;
+    data.Aktif = 'Ya';
+
+    if (id) await apiPost('update', 'Guru', data, id);
+    else await apiPost('add', 'Guru', data);
+
+    await loadData();
+    closeModal('modalGuru');
+    alert('✅ Data guru berhasil disimpan');
+  } catch (err) {
+    alert('❌ Error: ' + err.message);
+  } finally {
+    showLoading(false);
+  }
+});
+
+/* ============================================================
+   DELETE
+   ============================================================ */
+async function deleteData(table, id) {
+  if (!confirm('Yakin ingin menghapus data ini?')) return;
+  showLoading(true);
+  try {
+    await apiPost('delete', table, null, id);
+    await loadData();
+    alert('✅ Data berhasil dihapus');
+  } catch (err) {
+    alert('❌ Error: ' + err.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+/* ============================================================
+   POPULATE DROPDOWN
+   ============================================================ */
+function populateKecamatan() {
+  const options = DATA.kecamatan.map(k => `<option value="${k.NamaKecamatan}">${k.NamaKecamatan}</option>`).join('');
+  document.getElementById('selectKecSekolah').innerHTML = '<option value="">-- Pilih --</option>' + options;
+  document.getElementById('filterKecSekolah').innerHTML = '<option value="">📍 Semua Kecamatan</option>' + options;
+  document.getElementById('filterKecGuru').innerHTML = '<option value="">📍 Semua Kecamatan</option>' + options;
+}
+
+function populateSelectSekolah() {
+  const sel = document.getElementById('selectSekolahGuru');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">-- Pilih Sekolah --</option>' +
+    DATA.sekolah.filter(s => s.Aktif !== 'Tidak')
+      .sort((a, b) => a.NamaSekolah.localeCompare(b.NamaSekolah))
+      .map(s => `<option value="${s.ID}">${s.NamaSekolah} (${s.Kecamatan})</option>`).join('');
+  if (current) sel.value = current;
+}
+
+/* ============================================================
+   SETTING
+   ============================================================ */
+document.getElementById('formSetting').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  showLoading(true);
+  try {
+    const fd = new FormData(e.target);
+    const data = Object.fromEntries(fd.entries());
+    const tahun = `${data.TahunAwal}/${data.TahunAkhir} · ${data.Semester}`;
+    await apiPost('updateSetting', 'Setting', { Key: 'TahunAjaran', Value: tahun });
+    DATA.tahunAjaran = { Tahun: tahun };
+    updateTahunAjaranUI();
+    closeModal('modalSetting');
+    alert('✅ Tahun ajaran berhasil diperbarui');
+  } catch (err) {
+    alert('❌ Error: ' + err.message);
+  } finally {
+    showLoading(false);
+  }
+});
+
+function updateTahunAjaranUI() {
+  const t = DATA.tahunAjaran.Tahun || '2024/2025 · Genap';
+  document.getElementById('headerTahun').innerText = t;
+  document.getElementById('infoTahunAjaran').innerText = t;
+}
+
+/* ============================================================
+   EXPORT EXCEL
+   ============================================================ */
+function exportExcel(type) {
+  const wb = XLSX.utils.book_new();
+  const ta = DATA.tahunAjaran.Tahun || '2024/2025';
+
+  if (type === 'sekolah' || type === 'lengkap') {
+    const rows = DATA.sekolah.filter(s => s.Aktif !== 'Tidak').map((s, i) => {
+      const st = hitungStatSekolah(s);
+      return { No: i + 1, NPSN: s.NPSN, 'Nama Sekolah': s.NamaSekolah, Kecamatan: s.Kecamatan, Status: s.Status, Rombel: s.JumlahRombel, Siswa: s.JumlahSiswa, Kebutuhan: st.kebutuhan, Tersedia: st.tersedia, Kekurangan: st.kekurangan };
+    });
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Data Sekolah');
+  }
+
+  if (type === 'guru' || type === 'lengkap') {
+    const rows = DATA.guru.filter(g => g.Aktif !== 'Tidak').map((g, i) => {
+      const sk = DATA.sekolah.find(s => String(s.ID) === String(g.SekolahID));
+      return { No: i + 1, NIP: g.NIP, 'Nama Guru': g.NamaGuru, JK: g.JK, Pendidikan: g.Pendidikan, Mapel: g.Mapel, Status: g.StatusPegawai, Sekolah: sk ? sk.NamaSekolah : '-', Kecamatan: sk ? sk.Kecamatan : '-' };
+    });
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Data Guru');
+  }
+
+  if (type === 'rekap' || type === 'lengkap') {
+    const rows = [];
+    let no = 1;
+    DATA.kecamatan.forEach(k => {
+      const sk = DATA.sekolah.filter(s => s.Kecamatan === k.NamaKecamatan && s.Aktif !== 'Tidak');
+      const ids = sk.map(s => String(s.ID));
+      const gk = DATA.guru.filter(g => g.Aktif !== 'Tidak' && ids.includes(String(g.SekolahID)));
+      const kebutuhan = sk.reduce((sum, s) => sum + (parseInt(s.KebutuhanGuru) || 0), 0);
+      rows.push({
+        No: no++, Kecamatan: k.NamaKecamatan, 'Jml Sekolah': sk.length, Kebutuhan: kebutuhan,
+        PNS: gk.filter(g => g.StatusPegawai === 'PNS').length,
+        PPPK: gk.filter(g => g.StatusPegawai === 'PPPK').length,
+        'GTT/Honor': gk.filter(g => g.StatusPegawai === 'GTT/Honor').length,
+        'Total Tersedia': gk.length,
+        Kekurangan: kebutuhan - gk.length,
+        '% Terpenuhi': kebutuhan > 0 ? Math.round((gk.length / kebutuhan) * 100) + '%' : '0%'
+      });
+    });
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Rekapitulasi');
+  }
+
+  XLSX.writeFile(wb, `SIGAP_SD_${type}_${ta.replace(/\//g, '-')}.xlsx`);
+}
+
+/* ============================================================
+   EXPORT PDF
+   ============================================================ */
+function exportPDF(type) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const ta = DATA.tahunAjaran.Tahun || '2024/2025';
+
+  doc.setFontSize(12); doc.setFont('helvetica', 'bold');
+  doc.text('PEMERINTAH KABUPATEN BADUNG', 105, 15, { align: 'center' });
+  doc.text('DINAS PENDIDIKAN, PEMUDA DAN OLAHRAGA', 105, 21, { align: 'center' });
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+  doc.text('Jl. Ni Made Diah No. 1, Mangupura — Bali', 105, 26, { align: 'center' });
+  doc.setLineWidth(0.5); doc.line(14, 30, 196, 30);
+
+  if (type === 'resmi') {
+    doc.setFontSize(12); doc.setFont('helvetica', 'bold');
+    doc.text('LAPORAN DATA TENAGA PENDIDIK SD', 105, 38, { align: 'center' });
+    doc.text(`Tahun Ajaran ${ta}`, 105, 44, { align: 'center' });
+
+    const rows = DATA.sekolah.filter(s => s.Aktif !== 'Tidak').map((s, i) => {
+      const st = hitungStatSekolah(s);
+      return [i + 1, s.NPSN, s.NamaSekolah, s.Kecamatan, s.Status, st.kebutuhan, st.tersedia, st.kekurangan];
+    });
+    doc.autoTable({
+      startY: 50,
+      head: [['No', 'NPSN', 'Nama Sekolah', 'Kecamatan', 'Status', 'Kebutuhan', 'Tersedia', 'Kekurangan']],
+      body: rows,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [99, 102, 241] }
+    });
+  } else if (type === 'kekurangan') {
+    doc.setFontSize(12); doc.setFont('helvetica', 'bold');
+    doc.text('LAPORAN KEKURANGAN TENAGA PENDIDIK', 105, 38, { align: 'center' });
+    doc.text(`Tahun Ajaran ${ta}`, 105, 44, { align: 'center' });
+
+    const rows = DATA.sekolah.filter(s => s.Aktif !== 'Tidak')
+      .map(s => ({ ...s, ...hitungStatSekolah(s) }))
+      .sort((a, b) => b.kekurangan - a.kekurangan)
+      .map((s, i) => [i + 1, s.NamaSekolah, s.Kecamatan, s.kebutuhan, s.tersedia, s.kekurangan, s.persen + '%']);
+
+    doc.autoTable({
+      startY: 50,
+      head: [['No', 'Nama Sekolah', 'Kecamatan', 'Kebutuhan', 'Tersedia', 'Kekurangan', '% Terpenuhi']],
+      body: rows,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [239, 68, 68] }
+    });
+  }
+
+  doc.save(`SIGAP_SD_${type}_${ta.replace(/\//g, '-')}.pdf`);
+}
+
+/* ============================================================
+   LOAD DATA
+   ============================================================ */
+async function loadData() {
+  try {
+    const [sekolah, guru, kecamatan, setting] = await Promise.all([
+      apiGet('Sekolah'),
+      apiGet('Guru'),
+      apiGet('Kecamatan'),
+      apiGet('Setting')
+    ]);
+    DATA.sekolah = sekolah;
+    DATA.guru = guru;
+    DATA.kecamatan = kecamatan.length ? kecamatan : [
+      { ID: 1, NamaKecamatan: 'Abiansemal' }, { ID: 2, NamaKecamatan: 'Kuta' },
+      { ID: 3, NamaKecamatan: 'Kuta Selatan' }, { ID: 4, NamaKecamatan: 'Kuta Utara' },
+      { ID: 5, NamaKecamatan: 'Mengwi' }, { ID: 6, NamaKecamatan: 'Petang' }
+    ];
+    const taRow = setting.find(s => s.Key === 'TahunAjaran');
+    DATA.tahunAjaran = taRow ? { Tahun: taRow.Value } : { Tahun: '2024/2025 · Genap' };
+
+    populateKecamatan();
+    populateSelectSekolah();
+    updateTahunAjaranUI();
+    renderDashboard();
+  } catch (err) {
+    console.error(err);
+    alert('❌ Gagal memuat data: ' + err.message + '\n\nPastikan URL API sudah benar.');
+  }
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+  if (API_URL.includes('GANTI_DENGAN')) {
+    alert('⚠️ Silakan ganti nilai API_URL dengan URL Deploy Apps Script Anda.');
+  }
+  loadData();
+});
+</script>
+</body>
+</html>
